@@ -1,0 +1,209 @@
+package sdmcet.cse.oop.cta;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class CTAActivity4 extends JFrame {
+    private JLabel lblIA1, lblIA2, lblIA3, lblCTA, lblSEE, lblGrade, lblTotalMarks;
+    private JTextField txtIA1, txtIA2, txtIA3, txtCTA, txtSEE;
+    private JButton btnCalculate;
+
+    public CTAActivity4() {
+        setTitle("Grade Calculator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1400, 1250);
+        setLocationRelativeTo(null);
+
+        initializeComponents();
+
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Row 1
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        add(lblIA1, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        add(txtIA1, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        add(lblIA2, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        add(txtIA2, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        add(lblIA3, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        add(txtIA3, gbc);
+
+        // Row 2
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        add(lblCTA, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        add(txtCTA, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        add(lblSEE, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        add(txtSEE, gbc);
+
+     
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 6;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(btnCalculate, gbc);
+
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 10;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(lblTotalMarks, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 10;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(lblGrade, gbc);
+
+        btnCalculate.addActionListener(new ActionListener() {
+ 
+            public void actionPerformed(ActionEvent e) {
+                calculate();
+            }
+        });
+    }
+
+    private void initializeComponents() {
+        lblIA1 = new JLabel("IA-1:");
+        lblIA2 = new JLabel("IA-2:");
+        lblIA3 = new JLabel("IA-3:");
+        lblCTA = new JLabel("CTA:");
+        lblSEE = new JLabel("SEE:");
+        lblTotalMarks = new JLabel("");
+        lblGrade = new JLabel("");
+
+        txtIA1 = new JTextField(10);
+        txtIA2 = new JTextField(10);
+        txtIA3 = new JTextField(10);
+        txtCTA = new JTextField(10);
+        txtSEE = new JTextField(10);
+
+        btnCalculate = new JButton("Calculate");
+    }
+
+    private void calculate() {
+        try {
+            int ia1 = Integer.parseInt(txtIA1.getText());
+            int ia2 = Integer.parseInt(txtIA2.getText());
+            int ia3 = Integer.parseInt(txtIA3.getText());
+            int cta = Integer.parseInt(txtCTA.getText());
+            int see = Integer.parseInt(txtSEE.getText());
+
+            if (validateMarks(ia1, ia2, ia3, cta, see)) {
+                if (isDetainedForIA(ia1, ia2, ia3, cta)) {
+                    JOptionPane.showMessageDialog(this, "Student is detained for IA");
+                    lblTotalMarks.setText("");
+                    lblGrade.setText("");
+                } else {
+                    int cie = calculateCIE(ia1, ia2, ia3, cta);
+                    int totalMarks = calculateTotalMarks(cie, see);
+                    String grade = calculateGrade(totalMarks);
+
+                    lblTotalMarks.setText("Total Marks: " + totalMarks);
+                    lblGrade.setText("Grade: " + grade);
+
+                    if (grade.equals("F")) {
+                        if (see >= 0 && see < 38) {
+                            JOptionPane.showMessageDialog(this, "Put for Revaluation or Attend Makeup Exam");
+                        } else if (see == 38 || see == 39) {
+                            JOptionPane.showMessageDialog(this, "SEE marks upgraded to 40.");
+                        }
+                    }
+                }
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid marks entered!");
+        }
+    }
+
+    private boolean validateMarks(int ia1, int ia2, int ia3, int cta, int see) {
+        if (ia1 < 0 || ia1 > 20 || ia2 < 0 || ia2 > 20 || ia3 < 0 || ia3 > 20 || cta < 0 || cta > 10 || see < 0 || see > 100) {
+            JOptionPane.showMessageDialog(this, "Invalid marks entered!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isDetainedForIA(int ia1, int ia2, int ia3, int cta) {
+        int totalIaCtaMarks = ia1 + ia2 + ia3 + cta;
+        return totalIaCtaMarks < 20;
+    }
+
+    private int calculateCIE(int ia1, int ia2, int ia3, int cta) {
+        int cie = ia1 + ia2 + ia3 + cta - Math.min(Math.min(ia1, ia2), ia3);
+        return cie;
+    }
+
+    private int calculateTotalMarks(int cie, int see) {
+        if (cie < 20) {
+            JOptionPane.showMessageDialog(this, "Student is detained from taking SEE");
+            return 0;
+        }
+
+        if (see == 38 || see == 39) {
+            see = 40;
+        }
+
+        double totalMarks = (cie + see) / 2.0;
+        totalMarks = Math.round(totalMarks);
+
+        return (int) totalMarks;
+    }
+
+    private String calculateGrade(int totalMarks) {
+        if (totalMarks >= 90 && totalMarks <= 100) {
+            return "S";
+        } else if (totalMarks >= 80 && totalMarks < 90) {
+            return "A";
+        } else if (totalMarks >= 70 && totalMarks < 80) {
+            return "B";
+        } else if (totalMarks >= 60 && totalMarks < 70) {
+            return "C";
+        } else if (totalMarks >= 50 && totalMarks < 60) {
+            return "D";
+        } else if (totalMarks >= 40 && totalMarks < 50) {
+            return "E";
+        } else {
+            return "F";
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new CTAActivity4().setVisible(true);
+            }
+        });
+    }
+}
